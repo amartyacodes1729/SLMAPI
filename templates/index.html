@@ -1,90 +1,13 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Image Processing API</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f9;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-        }
-
-        h1 {
-            color: #333;
-            margin-bottom: 20px;
-        }
-
-        form {
-            background: #ffffff;
-            padding: 20px 30px;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            text-align: center;
-        }
-
-        label {
-            font-size: 16px;
-            color: #555;
-            margin-bottom: 10px;
-            display: block;
-        }
-
-        input[type="file"] {
-            padding: 8px;
-            margin: 15px 0;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            font-size: 14px;
-        }
-
-        button {
-            background-color: #4CAF50;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-        }
-
-        button:hover {
-            background-color: #45a049;
-        }
-
-        footer {
-            margin-top: 20px;
-            font-size: 14px;
-            color: #aaa;
-        }
-
-        footer a {
-            color: #4CAF50;
-            text-decoration: none;
-        }
-
-        footer a:hover {
-            text-decoration: underline;
-        }
-    </style>
+    <title>Process PDF</title>
 </head>
 <body>
-    <h1>Image Processing Tool</h1>
-    <form action="/process_image" method="post" enctype="multipart/form-data">
-        <label for="image">Upload Your Image</label>
-        <input type="file" name="image" id="image" accept="image/*" required>
-        <br>
-        <button type="submit">Process Image</button>
+    <h1>Upload a PDF for Processing</h1>
+    <form action="/process_pdf" method="post" enctype="multipart/form-data">
+        <input type="file" name="pdf_file" accept="application/pdf" required>
+        <button type="submit">Upload</button>
     </form>
-    <footer>
-        Created with dedication by <a href="#">Your Name</a>
-    </footer>
 </body>
 </html>
