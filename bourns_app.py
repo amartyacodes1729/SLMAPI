@@ -44,10 +44,11 @@ def process_pdf():
             shutil.copyfileobj(response.raw, f)
 
         # Convert PDF to image
+        print("Converting PDF to image...")
         pdf_read = pdf2image.convert_from_path(temp_pdf_path)
         pdf_read[0].save("temp_image.png", "PNG")
         image = Image.open("temp_image.png")
-
+        print("PDF converted to image successfully.")
         # Define the prompt
         text = """You are an expert in table reading task. First obtain the part number/codes present inside the table under electrical specifications.Then for each part number obtain the electrical attribute values which are the names of the columns. The attribute values that you need to obtain are Inductance (L), Inductance Tol., SRF (MHz), DCR  (mW) Typ., DCR  (mW) Max., Irms (A) typ., Isat1 (A) typ. and Isat2 (A) typ. Give the output in the form of a dictionary. Make the main key as 'attribute_values'. Give only the dictionary with unique part numbers."""
 
@@ -76,7 +77,7 @@ def process_pdf():
             return_tensors="pt",
         )
         inputs = inputs.to("cuda")
-
+        print("Generating output...")
         # Generate output
         generated_ids = model.generate(**inputs, max_new_tokens=5000)
         generated_ids_trimmed = [
@@ -86,7 +87,8 @@ def process_pdf():
             generated_ids_trimmed, skip_special_tokens=True, clean_up_tokenization_spaces=False
         )[0]
         output_text = output_text.replace("```", "").replace("json", "").replace("\u00b1", "").replace("python", "")
-
+        print("Output generated successfully.")
+        print("Output:", output_text)
         # Parse the output
         data = ast.literal_eval(output_text)
         result = {
