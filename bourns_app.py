@@ -9,6 +9,7 @@ import pdf2image
 from PIL import Image
 import requests
 import shutil
+import re
 app = Flask(__name__)
 
 # Model and processor setup
@@ -21,6 +22,25 @@ model = Qwen2VLForConditionalGeneration.from_pretrained(
     "Qwen/Qwen2-VL-7B-Instruct", torch_dtype="auto", device_map="auto", quantization_config=quant_config
 )
 processor = AutoProcessor.from_pretrained("Qwen/Qwen2-VL-7B-Instruct")
+def format_attribute(attribute_name, value):
+    unit_map = {
+        "Inductance": "µH",
+        "DCR (mW) Typ.": "mΩ",
+        "DCR (mW) Max.": "mΩ",
+        "Irms (A) Typ.": "A",
+        "Isat1 (A) Typ.": "A",
+        "Isat2 (A) Typ.": "A",
+        "SRF (MHz)": "MHz",
+    }
+    unit = unit_map.get(attribute_name, "")
+    return {
+        "value": value,
+        "value_min": "",
+        "value_max": "",
+        "unit": unit,
+        "page_num": "",  # Populate page number if available
+        "comments": "",
+    }
 
 @app.route("/", methods=["GET"])
 def home():
@@ -87,15 +107,26 @@ def process_pdf():
             generated_ids_trimmed, skip_special_tokens=True, clean_up_tokenization_spaces=False
         )[0]
         output_text = output_text.replace("```", "").replace("json", "").replace("\u00b1", "").replace("python", "")
+
         print("Output generated successfully.")
         print("Output:", output_text)
         # Parse the output
         data = ast.literal_eval(output_text)
-        result = {
+        result = [
             {"Part Number": key, "URL": pdf_url, **value} for key, value in data.items()
-        }
+        ]
+        final_result = []
+        for input_data in result:
+            # Transform logic
+            output_data = {"part_no": input_data.get("Part Number", ""),"url": input_data.get("URL", "")}
+            # output_data = {"url": input_data.get("URL", "")}
 
-        return jsonify(result)
+            for key, value in input_data.items():
+                if key not in ["Part Number", "URL"]:
+                    formatted_key = re.sub(r"[^A-Za-z0-9 ]", "", key).upper().replace(" ", "_")
+                    output_data[formatted_key] = format_attribute(key, value)
+            final_result.append(output_data)
+        return jsonify(final_result)
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
