@@ -7,7 +7,8 @@ import pandas as pd
 import os
 import pdf2image
 from PIL import Image
-
+import requests
+import shutil
 app = Flask(__name__)
 
 # Model and processor setup
@@ -27,17 +28,20 @@ def home():
 
 @app.route("/process_pdf", methods=["POST"])
 def process_pdf():
-    if 'pdf_file' not in request.files:
-        return jsonify({"error": "No file uploaded."}), 400
-
-    pdf_file = request.files['pdf_file']
-    if pdf_file.filename == '':
-        return jsonify({"error": "No selected file."}), 400
+    pdf_url = request.json.get('pdf_url')
+    if not pdf_url:
+        return jsonify({"error": "No URL provided."}), 400
 
     try:
-        # Save uploaded PDF to a temporary directory
-        temp_pdf_path = "temp_uploaded.pdf"
-        pdf_file.save(temp_pdf_path)
+        # Download the PDF file from the provided URL
+        response = requests.get(pdf_url, stream=True)
+        if response.status_code != 200:
+            return jsonify({"error": "Failed to download the PDF from the URL."}), 400
+
+        # Save the downloaded PDF to a temporary file
+        temp_pdf_path = "temp_downloaded.pdf"
+        with open(temp_pdf_path, "wb") as f:
+            shutil.copyfileobj(response.raw, f)
 
         # Convert PDF to image
         pdf_read = pdf2image.convert_from_path(temp_pdf_path)
@@ -81,20 +85,13 @@ def process_pdf():
         output_text = processor.batch_decode(
             generated_ids_trimmed, skip_special_tokens=True, clean_up_tokenization_spaces=False
         )[0]
-        output_text = output_text.replace("```", "").replace("json", "").replace("±", "").replace("python", "")
-        # print("Generating Report....", output_text)
+        output_text = output_text.replace("```", "").replace("json", "").replace("\u00b1", "").replace("python", "")
 
         # Parse the output
         data = ast.literal_eval(output_text)
         result = [
-        {"Part Number": key, **value} for key, value in data.items()
-    ]       
-        
-        print("Parsed data...", result)
-        # flat_dict = {}
-        # for key, value in data.items():
-        #     flat_dict.update({"Part Number": key, **value})
-        # print("Generating flat dict...", flat_dict)
+            {"Part Number": key, **value} for key, value in data.items()
+        ]
 
         return jsonify(result)
 
