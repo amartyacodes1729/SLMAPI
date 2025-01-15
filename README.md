@@ -2,4 +2,4 @@
 
 ## Run API
 python3 bourns_app.py
-<img width="1005" alt="image" src="https://github.com/user-attachments/assets/ff3278d2-3ad3-407f-b7d4-496ab030b4e9" />
+![image](https://github.com/user-attachments/assets/fbc2b376-0413-4bbd-b0d6-0c1911958445)
