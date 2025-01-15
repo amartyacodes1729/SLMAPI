@@ -89,9 +89,9 @@ def process_pdf():
 
         # Parse the output
         data = ast.literal_eval(output_text)
-        result = [
-            {"Part Number": key, **value} for key, value in data.items()
-        ]
+        result = {
+            {"Part Number": key, "URL": pdf_url, **value} for key, value in data.items()
+        }
 
         return jsonify(result)
 
